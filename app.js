@@ -3,7 +3,7 @@
 /* ═══════════════════════════════
    CONFIG
 ═══════════════════════════════ */
-const DEFAULT_URL = "https://script.google.com/macros/s/AKfycbw9OF0VE6xTsH2qyKqGbsScNx6vVbJoQ9mWuG69SrEdaTIr4cuzxkQe8d024YqhQkAI/exec";
+const DEFAULT_URL = "https://script.google.com/macros/s/AKfycbz1t72o0FSqIZeRxXsQmjWwHzo4y4uGBLGrcbHec8CVSrtJpLh_cBxeRj7bIwp39XRv/exec";
 let webAppURL    = localStorage.getItem('dashURL') || DEFAULT_URL;
 let autoInterval = parseInt(localStorage.getItem('dashInt') || '30000');
 let timer        = null;
