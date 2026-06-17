@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DetectLog</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23F47B20'/%3E%3Cpath d='M50 15 L78 28 L78 52 C78 67 65 78 50 85 C35 78 22 67 22 52 L22 28 Z' fill='white'/%3E%3Cpath d='M42 52 L47 57 L60 44' stroke='%23F47B20' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════
+     LOGIN OVERLAY
+═══════════════════════════════ -->
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-icon"><i data-lucide="shield-check"></i></div>
+      <div class="login-brand-name">DetectLog</div>
+    </div>
+    <div class="login-sub">Security Operations — กรุณาเข้าสู่ระบบ</div>
+
+    <div class="login-field">
+      <label class="login-label">Username</label>
+      <input class="login-inp" id="loginUser" placeholder="Username" autocomplete="off"
+             onkeydown="if(event.key==='Enter')document.getElementById('loginPw').focus()"/>
+    </div>
+    <div class="login-field">
+      <label class="login-label">Password</label>
+      <div class="pw-wrap">
+        <input class="login-inp" type="password" id="loginPw" placeholder="Password"
+               autocomplete="new-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <button class="pw-eye" type="button" onclick="togglePw()" id="pwEye">
+          <span id="pwEyeIcon"><i data-lucide="eye"></i></span>
+        </button>
+      </div>
+    </div>
+
+    <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     MOBILE HEADER
+═══════════════════════════════ -->
+<header class="mobile-header">
+  <div class="mobile-brand">
+    <div class="mobile-brand-icon"><i data-lucide="shield-check"></i></div>
+    <div class="mobile-brand-name">DetectLog</div>
+  </div>
+  <div class="mobile-actions">
+    <div class="mobile-status">
+      <div class="status-dot" id="statusDotMobile" style="width:6px;height:6px;"></div>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);" id="lastUpdateMobile">—</span>
+    </div>
+    <button class="hamburger-btn" onclick="openDrawer()"><i data-lucide="menu"></i></button>
+  </div>
+</header>
+
+<!-- Mobile drawer -->
+<div class="mobile-drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <div style="padding:20px;border-bottom:1px solid var(--border);">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;margin-bottom:4px;">DetectLog</div>
+    <div style="font-size:11px;color:var(--muted);">Security Operations Dashboard</div>
+  </div>
+  <div style="padding:12px;">
+    <div class="nav-item active" onclick="mobileNavTo('top')"><i data-lucide="layout-dashboard" style="width:15px;height:15px;"></i> ภาพรวมระบบ</div>
+    <div class="nav-item" onclick="mobileNavTo('sec-floorplan')"><i data-lucide="map" style="width:15px;height:15px;"></i> Floorplan</div>
+    <div class="nav-item" onclick="mobileNavTo('sec-stats')"><i data-lucide="bar-chart-2" style="width:15px;height:15px;"></i> สถิติ Detect</div>
+    <div class="nav-item" onclick="mobileNavTo('sec-log')"><i data-lucide="scroll-text" style="width:15px;height:15px;"></i> Log ย้อนหลัง</div>
+    <div class="nav-item system-nav-section" onclick="mobileGoPage('mode')"><i data-lucide="zap" style="width:15px;height:15px;"></i> โหมดการทำงาน</div>
+    <div class="nav-item system-nav-section" onclick="mobileGoPage('wifi')"><i data-lucide="wifi" style="width:15px;height:15px;"></i> WiFi สำรอง</div>
+    <div class="nav-item system-nav-section" onclick="mobileGoPage('settings')"><i data-lucide="settings-2" style="width:15px;height:15px;"></i> ตั้งค่าขั้นสูง</div>
+  </div>
+  <div style="margin-top:auto;padding:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;">
+    <button class="btn-icon" style="width:auto;padding:8px 12px;gap:6px;display:flex;" onclick="toggleTheme()">
+      <i data-lucide="moon" id="themeIconMobile"></i>
+      <span style="font-size:12px;font-family:'IBM Plex Mono',monospace;">สลับธีม</span>
+    </button>
+    <button class="btn-ghost" style="width:100%;" onclick="doLogout()">
+      <i data-lucide="log-out"></i> ออกจากระบบ
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     APP SHELL
+═══════════════════════════════ -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <div class="brand-icon"><i data-lucide="shield-check"></i></div>
+        <div class="brand-name">DetectLog</div>
+      </div>
+      <div class="brand-sub">Security Ops</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Monitor</div>
+      <button class="nav-item active" data-tip="ภาพรวมระบบ" onclick="navTo('top',this)"><i data-lucide="layout-dashboard"></i><span class="nav-item-text">ภาพรวมระบบ</span></button>
+      <button class="nav-item" data-tip="Floorplan" onclick="navTo('sec-floorplan',this)"><i data-lucide="map"></i><span class="nav-item-text">Floorplan</span></button>
+      <button class="nav-item" data-tip="Live Events" onclick="navTo('sec-stats',this)"><i data-lucide="activity"></i><span class="nav-item-text">Live Events</span></button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Analytics</div>
+      <button class="nav-item" data-tip="สถิติ Detect" onclick="navTo('sec-stats',this)"><i data-lucide="bar-chart-2"></i><span class="nav-item-text">สถิติ Detect</span></button>
+      <button class="nav-item" data-tip="รายวัน" onclick="navTo('sec-stats',this)"><i data-lucide="calendar"></i><span class="nav-item-text">รายวัน</span></button>
+      <button class="nav-item" data-tip="Log ย้อนหลัง" onclick="navTo('sec-log',this)"><i data-lucide="scroll-text"></i><span class="nav-item-text">Log ย้อนหลัง</span></button>
+    </div>
+
+    <div class="nav-section system-nav-section">
+      <div class="nav-section-label">System</div>
+      <button class="nav-item" data-tip="โหมดการทำงาน" onclick="goPage('mode',this)"><i data-lucide="zap"></i><span class="nav-item-text">โหมดการทำงาน</span></button>
+      <button class="nav-item" data-tip="WiFi สำรอง" onclick="goPage('wifi',this)"><i data-lucide="wifi"></i><span class="nav-item-text">WiFi สำรอง</span></button>
+      <button class="nav-item" data-tip="ตั้งค่าขั้นสูง" onclick="goPage('settings',this)"><i data-lucide="settings-2"></i><span class="nav-item-text">ตั้งค่าขั้นสูง</span></button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span class="status-label">Live</span>
+        <span class="status-time" id="lastUpdate">—</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-icon" style="flex:1;width:auto;" onclick="toggleTheme()" title="สลับธีม">
+          <i data-lucide="moon" id="themeIcon"></i>
+        </button>
+        <button class="btn-icon" style="flex:1;width:auto;" onclick="location.reload()" title="รีเฟรช">
+          <i data-lucide="refresh-cw"></i>
+        </button>
+        <button class="btn-ghost" style="flex:1;font-size:11px;gap:5px;white-space:nowrap;" onclick="doLogout()">
+          <i data-lucide="log-out"></i><span class="nav-item-text">ออกจากระบบ</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+  <!-- Sidebar toggle tab - outside sidebar so overflow doesn't clip it -->
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="ย่อ/ขยาย sidebar">
+    <i data-lucide="chevron-left"></i>
+  </button>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="page-title" id="topbarTitle">ภาพรวมระบบ</span>
+        <span class="page-sub" id="topbarSub">Security Monitoring Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-icon" onclick="location.reload()"><i data-lucide="refresh-cw"></i></button>
+        <button class="btn-primary" id="topbarRefreshBtn" onclick="fetchAll()">
+          <i data-lucide="zap"></i>รีเฟรชข้อมูล
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <div class="err-bar" id="errMsg"></div>
+
+      <!-- ═══ PAGE: DASHBOARD ═══ -->
+      <div id="page-dashboard" class="page-view active">
+
+      <!-- Config -->
+      <div class="config-row">
+        <span class="config-label">Web App URL</span>
+        <input class="inp" id="urlInp" placeholder="https://script.google.com/macros/s/.../exec"/>
+        <select class="sel-inp" id="intSel">
+          <option value="30000">Auto 30s</option>
+          <option value="60000">Auto 60s</option>
+          <option value="0">Manual</option>
+        </select>
+        <button class="btn-primary" onclick="saveConfig()"><i data-lucide="save"></i>บันทึก</button>
+      </div>
+
+      <!-- FLOORPLAN -->
+      <div id="sec-floorplan">
+        <div class="section-hdr">
+          <div class="section-label">Floorplan Monitor</div>
+          <div class="legend-row">
+            <div class="legend-pill" style="border-color:#F47B20;color:#F47B20;background:rgba(244,123,32,.07);">Zone 1 — A</div>
+            <div class="legend-pill" style="border-color:#22D3EE;color:#22D3EE;background:rgba(34,211,238,.07);">Zone 2 — B</div>
+            <div class="legend-pill" style="border-color:#84CC16;color:#84CC16;background:rgba(132,204,22,.07);">Zone 3 — C</div>
+          </div>
+        </div>
+        <div class="panel" style="padding:16px;">
+          <div class="fp-map" id="fpMap">
+            <img src="workshop.jpg" alt="Workshop Floorplan" draggable="false">
+            <div id="fpZ1" class="fp-zone fp-z1" style="left:69.3%;top:18.9%;width:30%;height:68.9%;"></div>
+            <div id="fpZ2" class="fp-zone fp-z2" style="left:77.9%;top:1.8%;width:21.3%;height:15.9%;"></div>
+            <div id="fpZ3" class="fp-zone fp-z3" style="left:6.9%;top:3.7%;width:53%;height:85%;"></div>
+               
+            <div class="fp-dot fp-idle fp-c1" id="fds1_1" data-lbl="Zone 1 — Corridor บน" style="left:77.5%;top:26.5%;"></div>
+            <div class="fp-dot fp-idle fp-c1" id="fds1_2" data-lbl="Zone 1 — Corridor ล่าง" style="left:77.5%;top:64%;"></div>
+            <div class="fp-dot fp-idle fp-c1" id="fds1_3" data-lbl="Zone 1 — Canteen" style="left:89.8%;top:74.4%;"></div>
+               
+            <div class="fp-dot fp-idle fp-c2" id="fds2_1" data-lbl="Zone 2 — Fire Escape ซ้าย" style="left:83.4%;top:8%;"></div>
+            <div class="fp-dot fp-idle fp-c2" id="fds2_2" data-lbl="Zone 2 — Fire Escape ขวา" style="left:88.6%;top:8%;"></div>
+            <div class="fp-dot fp-idle fp-c2" id="fds2_3" data-lbl="Zone 2 — Locker Room" style="left:86.3%;top:14.5%;"></div>
+               
+            <div class="fp-dot fp-idle fp-c3" id="fds3_1" data-lbl="Zone 3 — Workshop Gate บน" style="left:57.5%;top:10.3%;"></div>
+            <div class="fp-dot fp-idle fp-c3" id="fds3_2" data-lbl="Zone 3 — Access Control บน" style="left:52.5%;top:15%;"></div>
+            <div class="fp-dot fp-idle fp-c3" id="fds3_3" data-lbl="Zone 3 — Warehouse Gate ล่าง" style="left:28.5%;top:81.4%;"></div>
+            <div class="fp-dot fp-idle fp-c3" id="fds3_4" data-lbl="Zone 3 — Warehouse มุมซ้าย" style="left:23.5%;top:19.4%;"></div>
+            <div class="fp-tip" id="fpTip"></div>
+          </div>
+          <div class="fp-status-row">
+            <div class="fp-chip">
+              <div class="fp-chip-dot" id="fpDot1" style="background:#6b7280;"></div>
+              <span class="fp-chip-zone" style="color:#F47B20;">ZONE 1</span>
+              <span class="fp-chip-state" id="fpTxt1">IDLE</span>
+            </div>
+            <div class="fp-chip">
+              <div class="fp-chip-dot" id="fpDot2" style="background:#6b7280;"></div>
+              <span class="fp-chip-zone" style="color:#22D3EE;">ZONE 2</span>
+              <span class="fp-chip-state" id="fpTxt2">IDLE</span>
+            </div>
+            <div class="fp-chip">
+              <div class="fp-chip-dot" id="fpDot3" style="background:#6b7280;"></div>
+              <span class="fp-chip-zone" style="color:#84CC16;">ZONE 3</span>
+              <span class="fp-chip-state" id="fpTxt3">IDLE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEVICE CARDS -->
+      <div id="sec-devices">
+        <div class="section-hdr">
+          <div class="section-label">สถานะ Write Board</div>
+          <span style="font-size:10px;color:var(--muted);">คลิกการ์ดเพื่อแก้ไข Device Info</span>
+        </div>
+        <div class="cards-grid" id="swGrid"><div class="loading-text">กำลังโหลด...</div></div>
+      </div>
+
+      <!-- SUMMARY -->
+      <div>
+        <div class="section-hdr"><div class="section-label">สถิติสรุป แยก Write Board</div></div>
+        <div class="summary-strip" id="sumGrid"><div class="loading-text">กำลังโหลด...</div></div>
+      </div>
+
+      <!-- CHART: Uptime -->
+      <div class="panel" id="sec-stats">
+        <div class="panel-head">
+          <div class="panel-title"><i data-lucide="bar-chart-2"></i>จำนวน Detect ต่อ Board</div>
+          <div class="tabs-row" id="uptimeTabs">
+            <button class="tab-btn active" onclick="setUptimeRange('all',this)">ทั้งหมด</button>
+            <button class="tab-btn" onclick="setUptimeRange('7',this)">7 วัน</button>
+            <button class="tab-btn" onclick="setUptimeRange('30',this)">30 วัน</button>
+          </div>
+        </div>
+        <canvas id="uptimeChart" style="max-height:180px;"></canvas>
+      </div>
+
+      <!-- CHART: History -->
+      <div class="panel" id="sec-hist">
+        <div class="panel-head">
+          <div class="panel-title"><i data-lucide="activity"></i>ประวัติ Detect</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div class="date-row">
+              <input type="date" class="date-inp" id="filterDate"/>
+              <button class="tab-btn" onclick="clearDate()">ล้าง</button>
+            </div>
+            <div class="tabs-row" id="histTabs">
+              <button class="tab-btn active" onclick="setHistMode('all',this)">All</button>
+              <button class="tab-btn" onclick="setHistMode('0',this)">A</button>
+              <button class="tab-btn" onclick="setHistMode('1',this)">B</button>
+              <button class="tab-btn" onclick="setHistMode('2',this)">C</button>
+              <button class="tab-btn" onclick="setHistMode('3',this)">D</button>
+            </div>
+          </div>
+        </div>
+        <canvas id="histChart"></canvas>
+      </div>
+
+      <!-- CHART: Daily -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><i data-lucide="calendar"></i>Detect รายวัน แยก Board</div>
+          <div class="tabs-row" id="dailyTabs">
+            <button class="tab-btn active" onclick="setDailyMode('all',this)">All</button>
+            <button class="tab-btn" onclick="setDailyMode('0',this)">A</button>
+            <button class="tab-btn" onclick="setDailyMode('1',this)">B</button>
+            <button class="tab-btn" onclick="setDailyMode('2',this)">C</button>
+            <button class="tab-btn" onclick="setDailyMode('3',this)">D</button>
+          </div>
+        </div>
+        <canvas id="dailyChart"></canvas>
+      </div>
+
+      <!-- LOG TABLE -->
+      <div class="panel" id="sec-log">
+        <div class="panel-head">
+          <div class="panel-title"><i data-lucide="scroll-text"></i>Log ย้อนหลัง</div>
+          <div class="date-row">
+            <input type="date" class="date-inp" id="logDate"/>
+            <button class="tab-btn" onclick="clearLogDate()">ล้าง</button>
+          </div>
+        </div>
+        <div id="logWrap"><div class="loading-text">กำลังโหลด...</div></div>
+      </div>
+
+      </div><!-- /page-dashboard -->
+
+      <!-- ═══ PAGE: MODE ═══ -->
+      <div id="page-mode" class="page-view">
+        <div id="sec-mode">
+          <div class="section-hdr">
+            <div class="section-label">โหมดการทำงาน</div>
+            <span class="mode-badge" id="modeCurBadge">กำลังโหลด...</span>
+          </div>
+          <div class="panel">
+            <div class="mode-grid">
+              <button class="mode-opt" data-mode="1" onclick="selectRelayMode(1)">
+                <div class="mode-opt-icon"><i data-lucide="sun"></i></div>
+                <div><div class="mode-opt-name">24H ทุกวัน</div><div class="mode-opt-desc">ไฟเปิดได้ตลอดเวลา</div></div>
+              </button>
+              <button class="mode-opt" data-mode="2" onclick="selectRelayMode(2)">
+                <div class="mode-opt-icon"><i data-lucide="calendar-days"></i></div>
+                <div><div class="mode-opt-name">ตารางสัปดาห์</div><div class="mode-opt-desc">จ–ศ: 17:30–06:00 · ส–อา: 24ชม.</div></div>
+              </button>
+              <button class="mode-opt" data-mode="3" onclick="selectRelayMode(3)">
+                <div class="mode-opt-icon"><i data-lucide="moon"></i></div>
+                <div><div class="mode-opt-name">กลางคืนทุกวัน</div><div class="mode-opt-desc">ทุกวัน: 17:30–06:00 เท่านั้น</div></div>
+              </button>
+              <button class="mode-opt" data-mode="4" onclick="selectRelayMode(4)">
+                <div class="mode-opt-icon"><i data-lucide="ban"></i></div>
+                <div><div class="mode-opt-name">ปิดทั้งหมด</div><div class="mode-opt-desc">ไม่เปิด Relay ไม่ว่ากรณีใด</div></div>
+              </button>
+            </div>
+            <div class="mode-footer">
+              <button class="btn-primary" id="modeSaveBtn" onclick="saveRelayMode()" disabled>บันทึกโหมด</button>
+              <span class="toast-msg" id="modeToast"></span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /page-mode -->
+
+      <!-- ═══ PAGE: WIFI ═══ -->
+      <div id="page-wifi" class="page-view">
+        <div id="sec-backupwifi">
+          <div class="section-hdr">
+            <div class="section-label">WiFi สำรอง</div>
+            <span style="font-size:10px;color:var(--muted);">ตั้ง WiFi สำรองแยกแต่ละบอร์ด — บอร์ดจะ poll ค่าใหม่ทุก 10 นาที</span>
+          </div>
+          <div class="panel" style="margin-bottom:10px;padding:.875rem 1rem;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);">
+              <i data-lucide="info" style="width:13px;height:13px;flex-shrink:0"></i>
+              <span>WiFi หลัก (<b style="color:var(--text)">BGRIMM-GUEST</b>) hardcode อยู่ใน firmware — บอร์ดจะลอง Primary 3 ครั้ง ถ้าล้มเหลวจึงสลับมา Backup อัตโนมัติ</span>
+            </div>
+          </div>
+          <div id="backupWifiGrid">
+            <div class="loading-text">กำลังโหลด...</div>
+          </div>
+        </div>
+      </div><!-- /page-wifi -->
+
+      <!-- ═══ PAGE: SETTINGS ═══ -->
+      <div id="page-settings" class="page-view">
+        <div id="sec-settings">
+          <div class="section-hdr">
+            <div class="section-label">ตั้งค่าขั้นสูง</div>
+          </div>
+
+          <!-- General Settings -->
+          <div class="panel" style="margin-bottom:12px">
+            <div class="panel-hdr">
+              <span class="panel-title"><i data-lucide="sliders-horizontal" style="width:13px;height:13px;vertical-align:-1px;margin-right:5px;"></i>General</span>
+              <span style="font-size:10px;color:var(--muted);">ค่า Default Fallback</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:7px;background:var(--accent-dim);border:1px solid var(--accent);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;font-size:11px;line-height:1.6;">
+              <i data-lucide="info" style="width:13px;height:13px;flex-shrink:0;margin-top:2px;color:var(--accent);stroke-width:2.5;"></i>
+              <div>
+                <b style="color:var(--accent);">Mode 1 (24H)</b> และ <b style="color:var(--accent);">Mode 4 (ปิด)</b> — บอร์ดจะใช้ค่านี้เสมอ<br>
+                <b style="color:var(--accent);">Mode 2 และ 3</b> — ใช้ค่าจาก "ตารางเวลาแยกรายวัน" ด้านล่างแทน
+                <span style="color:var(--muted);"> (ถ้าวันนั้นปิดใช้งาน จะ fallback กลับมาใช้ค่านี้)</span>
+              </div>
+            </div>
+            <div class="settings-grid">
+              <div class="field-wrap"><label>Relay Timeout (วินาที)</label><input class="field-inp" id="sRelayTimeout" type="number" min="5" max="300" value="15"/></div>
+              <div class="field-wrap"><label>Poll Interval (วินาที)</label><input class="field-inp" id="sPollInterval" type="number" min="10" max="300" value="35"/></div>
+            </div>
+            <div class="settings-footer" style="margin-top:.75rem">
+              <button class="btn-primary" onclick="saveAdvSettings()"><i data-lucide="save"></i>บันทึก</button>
+              <span class="toast-msg" id="settingsToast"></span>
+            </div>
+            <div class="divider"></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Force Relay</div>
+            <div class="force-row">
+              <button class="force-on" id="forceOnBtn" onclick="setForceRelay(1)"><i data-lucide="zap" style="width:12px;height:12px;vertical-align:-1px;margin-right:4px;"></i>Force ON</button>
+              <button class="force-off" id="forceOffBtn" onclick="setForceRelay(0)">Force OFF</button>
+              <span class="force-status" id="forceStatus">สถานะ: ปกติ</span>
+            </div>
+          </div>
+
+          <!-- Schedule Table -->
+          <div class="panel" style="margin-bottom:12px">
+            <div class="panel-hdr">
+              <span class="panel-title"><i data-lucide="calendar-clock" style="width:13px;height:13px;vertical-align:-1px;margin-right:5px;"></i>ตารางเวลาแยกรายวัน</span>
+              <span style="font-size:10px;color:var(--muted);">ใช้กับ Mode 2 และ 3</span>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="sched-table" id="schedTable">
+                <thead><tr>
+                  <th>เปิดใช้</th><th>วัน</th>
+                  <th>เริ่ม</th><th>สิ้นสุด</th>
+                  <th>Relay Timeout (วิ)</th><th>Poll Interval (วิ)</th>
+                  <th></th>
+                </tr></thead>
+                <tbody id="schedBody"></tbody>
+              </table>
+            </div>
+            <div style="margin-top:14px;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">ตารางสรุป 1 อาทิตย์</div>
+              <div style="overflow-x:auto;">
+                <table class="log-tbl" id="schedSummaryTable">
+                  <thead><tr>
+                    <th>วัน</th><th>DD/MM/YYYY</th><th>เวลาเริ่ม–สิ้นสุด</th>
+                    <th>Relay Timeout</th><th>Poll Interval</th><th>สถานะ</th>
+                  </tr></thead>
+                  <tbody id="schedSummaryBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="sched-summary" id="schedSummary" style="display:none;">กำลังโหลด...</div>
+            <div class="settings-footer" style="margin-top:.75rem">
+              <button class="btn-primary" onclick="saveSchedule()"><i data-lucide="save"></i>บันทึกตาราง</button>
+              <span class="toast-msg" id="schedToast"></span>
+            </div>
+          </div>
+
+          <!-- Settings Log -->
+          <div class="panel">
+            <div class="panel-hdr" style="margin-bottom:.875rem">
+              <span class="panel-title"><i data-lucide="history" style="width:13px;height:13px;vertical-align:-1px;margin-right:5px;"></i>ประวัติการเปลี่ยนแปลง</span>
+              <button class="btn-ghost-sm" onclick="fetchSettingsLog()">
+                <i data-lucide="refresh-cw" style="width:11px;height:11px;vertical-align:-1px;margin-right:3px;"></i>โหลด
+              </button>
+            </div>
+            <div style="overflow-x:auto" id="settingsLogWrap">
+              <div class="loading-text">กด "โหลด" เพื่อดูประวัติ</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /page-settings -->
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOv" onclick="closeModalBg(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title-row">
+        <span class="modal-title" id="modalTitle">Device Info</span>
+        <span class="modal-pill" id="modalPill"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="info-block">
+      <div class="info-block-label" style="color:#1A5FA8;"><i data-lucide="pencil" style="width:10px;height:10px;vertical-align:-1px;margin-right:4px;"></i>Write Board — MAC</div>
+      <div class="info-block-val" id="mWriteMacDisp">—</div>
+      <div class="edit-row">
+        <input class="edit-inp" id="mWriteMacInp" placeholder="AA:BB:CC:DD:EE:FF"/>
+        <button class="edit-btn" onclick="saveWriteMac()">บันทึก</button>
+      </div>
+      <div class="saved-note" id="savedNote">✓ บันทึกแล้ว</div>
+    </div>
+    <div class="info-block">
+      <div class="info-block-label" style="color:#1A7A3A;"><i data-lucide="radio" style="width:10px;height:10px;vertical-align:-1px;margin-right:4px;"></i>Read Board — MAC</div>
+      <div class="info-block-val" id="mReadMac">—</div>
+      <div class="edit-row">
+        <input class="edit-inp" id="mReadMacInp" placeholder="AA:BB:CC:DD:EE:FF"/>
+        <button class="edit-btn" onclick="saveReadMac()">บันทึก</button>
+      </div>
+      <div class="saved-note" id="savedNoteRead">✓ บันทึกแล้ว</div>
+    </div>
+    <hr class="modal-divider"/>
+    <div class="lbl-field">
+      <label>ชื่อ / Location</label>
+      <input class="lbl-inp" id="mLblInp" placeholder="เช่น ทางเข้าหน้า, จุด B..."/>
+    </div>
+    <div class="modal-footer">
+      <button class="edit-btn" onclick="saveLabel()">บันทึกชื่อ</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</html>
