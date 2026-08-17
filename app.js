@@ -463,11 +463,12 @@ function renderHistChart(){
   if(fd){const d=new Date(fd);rows=rows.filter(r=>new Date(r.t).toDateString()===d.toDateString());}
   const boards=getWriteBoards();
   let __lastDay=null;
-  const labels=rows.map(r=>{
+  const dayBoundaryIdx=[];
+  const labels=rows.map((r,idx)=>{
     const d=new Date(r.t);
     const dayKey=d.toLocaleDateString('th-TH');
     const timeStr=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-    if(dayKey!==__lastDay){ __lastDay=dayKey; return dayKey+' '+timeStr; }
+    if(dayKey!==__lastDay){ __lastDay=dayKey; dayBoundaryIdx.push(idx); return dayKey+' '+timeStr; }
     return timeStr;
   });
   let datasets;
@@ -485,7 +486,9 @@ function renderHistChart(){
   }
   const cfg={type:'line',data:{labels,datasets},options:{responsive:true,animation:false,
     scales:{
-      x:{ticks:{color:c.text,font:{family:'IBM Plex Mono',size:10},maxTicksLimit:12},grid:{color:c.grid}},
+      x:{ticks:{color:c.text,font:{family:'IBM Plex Mono',size:10},autoSkip:false},
+        afterBuildTicks:axis=>{ axis.ticks=dayBoundaryIdx.map(i=>({value:i})); },
+        grid:{color:c.grid}},
       y:{min:-.1,max:1.1,ticks:{color:c.text,callback:v=>v===1?'⚡':v===0?'—':'',font:{family:'IBM Plex Mono',size:10}},grid:{color:c.grid}}
     },
     plugins:{legend:{labels:{color:c.text,font:{family:'IBM Plex Mono',size:11},boxWidth:12}},
