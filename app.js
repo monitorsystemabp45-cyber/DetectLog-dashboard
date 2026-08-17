@@ -462,7 +462,14 @@ function renderHistChart(){
   let rows=allHistory.filter(r=>r.trigger==='detect');
   if(fd){const d=new Date(fd);rows=rows.filter(r=>new Date(r.t).toDateString()===d.toDateString());}
   const boards=getWriteBoards();
-  const labels=rows.map(r=>new Date(r.t).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}));
+  let __lastDay=null;
+  const labels=rows.map(r=>{
+    const d=new Date(r.t);
+    const dayKey=d.toLocaleDateString('th-TH');
+    const timeStr=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    if(dayKey!==__lastDay){ __lastDay=dayKey; return dayKey+' '+timeStr; }
+    return timeStr;
+  });
   let datasets;
   if(histMode==='all'){
     datasets=boards.slice(0,4).map((b,i)=>({
@@ -483,7 +490,12 @@ function renderHistChart(){
     },
     plugins:{legend:{labels:{color:c.text,font:{family:'IBM Plex Mono',size:11},boxWidth:12}},
       tooltip:{backgroundColor:c.tbg,borderColor:c.tborder,borderWidth:1,titleColor:c.ttitle,bodyColor:c.tbody,
-        callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.raw===1?'detect':''}`}}}}};
+        callbacks:{
+          title:ctx=>{
+            const idx=ctx[0].dataIndex;
+            return new Date(rows[idx].t).toLocaleString('th-TH');
+          },
+          label:ctx=>` ${ctx.dataset.label}: ${ctx.raw===1?'detect':''}`}}}}};
   if(histChartObj){histChartObj.destroy();}
   histChartObj=new Chart(document.getElementById('histChart').getContext('2d'),cfg);
 }
