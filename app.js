@@ -3,7 +3,7 @@
 /* ═══════════════════════════════
    CONFIG
 ═══════════════════════════════ */
-const DEFAULT_URL = "https://script.google.com/macros/s/AKfycbz1t72o0FSqIZeRxXsQmjWwHzo4y4uGBLGrcbHec8CVSrtJpLh_cBxeRj7bIwp39XRv/exec";
+const DEFAULT_URL = "https://script.google.com/macros/s/AKfycbw9OF0VE6xTsH2qyKqGbsScNx6vVbJoQ9mWuG69SrEdaTIr4cuzxkQe8d024YqhQkAI/exec";
 let webAppURL    = localStorage.getItem('dashURL') || DEFAULT_URL;
 let autoInterval = parseInt(localStorage.getItem('dashInt') || '30000');
 let timer        = null;
@@ -287,7 +287,10 @@ function calcDailyDetect(rows){
   const days={};
   const boards=getWriteBoards();
   detectRows.forEach(r=>{
-    const dk=new Date(r.t).toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit'});
+    const d=new Date(r.t);
+    // ใช้ key แบบ YYYY-MM-DD (เรียงลำดับตามตัวอักษรได้ถูกต้องตรงกับเวลาจริงพอดี
+    // และกันวัน/เดือนเดียวกันจากคนละปีถูกนับรวมเป็นแท่งเดียวกันโดยไม่ตั้งใจ)
+    const dk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     if(!days[dk])days[dk]={};
     boards.forEach((b,i)=>{if(!days[dk]['b'+i])days[dk]['b'+i]=0;if(r.mac_write===b.mac_write)days[dk]['b'+i]++;});
   });
@@ -496,17 +499,20 @@ function setDailyMode(m,btn){
 function renderDailyChart(){
   const c=cc();
   const days=calcDailyDetect(allHistory);
-  const lbls=Object.keys(days).sort();
+  const keys=Object.keys(days).sort();
+  // key เป็น "YYYY-MM-DD" การ sort แบบ string ตรงนี้เรียงตามเวลาจริงได้ถูกต้องพอดี (ตัวเลขซ้ายไปขวา = ปี→เดือน→วัน)
+  const lbls=keys.map(k=>{const p=k.split('-');return p[2]+'/'+p[1];});
+  // แปลง key กลับเป็น label แบบ dd/mm สำหรับแสดงบนแกน x (อ่านง่ายกว่า แต่เก็บ key เดิมไว้ใช้ lookup ข้อมูล)
   const boards=getWriteBoards();
   let datasets;
   if(dailyMode==='all'){
     datasets=boards.slice(0,4).map((b,i)=>({
-      label:boardName(i),data:lbls.map(d=>(days[d]['b'+i]||0)),
+      label:boardName(i),data:keys.map(d=>(days[d]['b'+i]||0)),
       backgroundColor:SW_COLORS[i]+'99',borderColor:SW_COLORS[i],borderWidth:1,borderRadius:4
     }));
   }else{
     const i=parseInt(dailyMode);
-    datasets=[{label:boardName(i),data:lbls.map(d=>(days[d]['b'+i]||0)),
+    datasets=[{label:boardName(i),data:keys.map(d=>(days[d]['b'+i]||0)),
       backgroundColor:SW_COLORS[i]+'99',borderColor:SW_COLORS[i],borderWidth:1,borderRadius:4}];
   }
   const cfg={type:'bar',data:{labels:lbls,datasets},options:{responsive:true,animation:false,
