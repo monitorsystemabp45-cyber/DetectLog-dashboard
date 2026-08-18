@@ -198,11 +198,34 @@ function navTo(sectionId, btn) {
   main.scrollTo({top: el.offsetTop - offset, behavior:'smooth'});
 }
 function toggleSidebar(){
+  freezeChartsDuringTransition();
   const sb=document.getElementById('sidebar');
   const collapsed = sb.classList.toggle('collapsed');
   document.body.classList.toggle('sidebar-collapsed', collapsed);
   localStorage.setItem('sidebarCollapsed', collapsed?'1':'0');
   if(window.lucide) lucide.createIcons();
+}
+
+// กันกราฟกระตุกตอน sidebar animate: ล็อกขนาด wrapper ของแต่ละกราฟไว้ชั่วคราว
+// ระหว่าง transition ของ sidebar เพื่อไม่ให้ ResizeObserver ของ Chart.js ยิงรัวทุก frame
+// แล้วค่อย resize จริงทีเดียวหลัง transition จบ
+function freezeChartsDuringTransition(durationMs){
+  const objs=[histChartObj,dailyChartObj,uptimeChartObj].filter(Boolean);
+  if(!objs.length) return;
+  const wrappers=objs.map(ch=>ch.canvas.parentNode);
+  wrappers.forEach(w=>{
+    const r=w.getBoundingClientRect();
+    w.style.width=r.width+'px';
+    w.style.height=r.height+'px';
+  });
+  const sb=document.getElementById('sidebar');
+  const cs=sb?getComputedStyle(sb):null;
+  const parsedMs=cs?(parseFloat(cs.transitionDuration)||0)*1000:0;
+  const wait=durationMs||parsedMs||300;
+  setTimeout(()=>{
+    wrappers.forEach(w=>{ w.style.width=''; w.style.height=''; });
+    objs.forEach(ch=>{ try{ch.resize();}catch(e){} });
+  }, wait+30);
 }
 (function initSidebar(){
   if(localStorage.getItem('sidebarCollapsed')==='1'){
@@ -1293,12 +1316,17 @@ async function doLogin(){
 (function initScrollSpy(){
   const main = document.querySelector('.main');
   if(!main) return;
+  // ปิด scroll anchoring ของเบราว์เซอร์ เพราะตอน fetchAll() re-render การ์ด/log/กราฟ
+  // ทุก 30 วิ ความสูงเนื้อหาจะเปลี่ยน แล้วเบราว์เซอร์จะขยับ scrollTop เองเพื่อรักษาตำแหน่งเดิม
+  // ซึ่งไป trigger 'scroll' event ทั้งที่ผู้ใช้ไม่ได้ scroll เอง ทำให้ปุ่ม sidebar กระพริบ
+  main.style.overflowAnchor = 'none';
   const sections = [
     {id:'top', btn: document.querySelector('.sidebar .nav-item[data-tip="ภาพรวมระบบ"]')},
     {id:'sec-floorplan', btn: document.querySelector('.sidebar .nav-item[data-tip="Floorplan"]')},
     {id:'sec-stats', btn: document.querySelector('.sidebar .nav-item[data-tip="สถิติ Detect"]')},
     {id:'sec-log', btn: document.querySelector('.sidebar .nav-item[data-tip="Log ย้อนหลัง"]')},
   ];
+  let lastActiveBtn=null;
   main.addEventListener('scroll', ()=>{
     if (currentPage !== 'dashboard') return; // ไม่ทำงานบน system pages
     const scrollTop = main.scrollTop + 80;
@@ -1308,8 +1336,11 @@ async function doLogin(){
       const el=document.getElementById(s.id);
       if(el && el.offsetTop <= scrollTop) current = s;
     });
+    const nextBtn = current && current.btn ? current.btn : null;
+    if(nextBtn === lastActiveBtn) return; // section ไม่ได้เปลี่ยน ไม่ต้องแตะ DOM เลย กันกระพริบ
     document.querySelectorAll('.sidebar .nav-item').forEach(el=>el.classList.remove('active'));
-    if(current && current.btn) current.btn.classList.add('active');
+    if(nextBtn) nextBtn.classList.add('active');
+    lastActiveBtn = nextBtn;
   });
 })();
 
