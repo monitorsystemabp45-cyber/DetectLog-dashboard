@@ -466,7 +466,12 @@ function renderUptimeChart(){
         tooltip:{backgroundColor:c.tbg,borderColor:c.tborder,borderWidth:1,titleColor:c.ttitle,bodyColor:c.tbody,
           callbacks:{label:ctx=>` ${ctx.raw} ครั้ง`}}}}
   };
-  if(uptimeChartObj){uptimeChartObj.destroy();}
+  if(uptimeChartObj){
+    uptimeChartObj.data.labels=cfg.data.labels;
+    uptimeChartObj.data.datasets=cfg.data.datasets;
+    uptimeChartObj.update();
+    return;
+  }
   uptimeChartObj=new Chart(document.getElementById('uptimeChart').getContext('2d'),cfg);
 }
 
@@ -522,7 +527,15 @@ function renderHistChart(){
             return new Date(rows[idx].t).toLocaleString('th-TH');
           },
           label:ctx=>` ${ctx.dataset.label}: ${ctx.raw===1?'detect':''}`}}}}};
-  if(histChartObj){histChartObj.destroy();}
+  if(histChartObj){
+    histChartObj.data.labels=cfg.data.labels;
+    histChartObj.data.datasets=cfg.data.datasets;
+    // rows/dayBoundaryIdx เปลี่ยนทุกครั้งที่มีข้อมูลใหม่ ต้องอัป callback ที่ผูกกับตัวแปรนี้ด้วย ไม่งั้น tooltip/ticks จะอ้างข้อมูลเก่าค้าง
+    histChartObj.options.scales.x.afterBuildTicks=cfg.options.scales.x.afterBuildTicks;
+    histChartObj.options.plugins.tooltip.callbacks.title=cfg.options.plugins.tooltip.callbacks.title;
+    histChartObj.update();
+    return;
+  }
   histChartObj=new Chart(document.getElementById('histChart').getContext('2d'),cfg);
 }
 
@@ -558,7 +571,12 @@ function renderDailyChart(){
       y:{ticks:{color:c.text,font:{family:'IBM Plex Mono',size:10},stepSize:1},grid:{color:c.grid}}},
     plugins:{legend:{labels:{color:c.text,font:{family:'IBM Plex Mono',size:11},boxWidth:12}},
       tooltip:{backgroundColor:c.tbg,borderColor:c.tborder,borderWidth:1,titleColor:c.ttitle,bodyColor:c.tbody}}}};
-  if(dailyChartObj){dailyChartObj.destroy();}
+  if(dailyChartObj){
+    dailyChartObj.data.labels=cfg.data.labels;
+    dailyChartObj.data.datasets=cfg.data.datasets;
+    dailyChartObj.update();
+    return;
+  }
   dailyChartObj=new Chart(document.getElementById('dailyChart').getContext('2d'),cfg);
 }
 
@@ -1062,7 +1080,7 @@ async function fetchAll(){
     showErr('');setStatus('loading');
     const[history,devices]=await Promise.all([fetchHistory(),fetchDevices()]);
     allHistory=history;deviceList=devices;
-    renderCards();renderSummary();destroyCharts();renderCharts();renderLog();renderFloorplan();
+    renderCards();renderSummary();renderCharts();renderLog();renderFloorplan();
     renderBackupWifiGrid();
     const t=new Date().toLocaleTimeString('th-TH');
     ['lastUpdate','lastUpdateMobile'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t;});
