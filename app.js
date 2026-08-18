@@ -489,50 +489,53 @@ function renderHistChart(){
   const fd=document.getElementById('filterDate').value;
   let rows=allHistory.filter(r=>r.trigger==='detect');
   if(fd){const d=new Date(fd);rows=rows.filter(r=>new Date(r.t).toDateString()===d.toDateString());}
-  const boards=getWriteBoards();
-  let __lastDay=null;
-  const dayBoundaryIdx=[];
-  const labels=rows.map((r,idx)=>{
-    const d=new Date(r.t);
-    const dayKey=d.toLocaleDateString('th-TH');
-    const timeStr=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-    if(dayKey!==__lastDay){ __lastDay=dayKey; dayBoundaryIdx.push(idx); return dayKey+' '+timeStr; }
-    return timeStr;
+  const boards=getWriteBoards().slice(0,4);
+
+  const ts=rows.map(r=>r.t);
+  const minT=ts.length?Math.min(...ts):Date.now()-86400000;
+  const maxT=ts.length?Math.max(...ts):Date.now();
+  const pad=(maxT-minT)*0.02||3600000;
+
+  const fmtTick=v=>{
+    const d=new Date(v);
+    return d.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  };
+
+  const mkDataset=(b,i)=>({
+    label:boardName(i),
+    data:rows.filter(r=>r.mac_write===b.mac_write).map(r=>({x:r.t,y:i})),
+    backgroundColor:SW_COLORS[i],borderColor:SW_COLORS[i],
+    pointRadius:5,pointHoverRadius:7,showLine:false
   });
   let datasets;
   if(histMode==='all'){
-    datasets=boards.slice(0,4).map((b,i)=>({
-      label:boardName(i),data:rows.map(r=>r.mac_write===b.mac_write?1:0),
-      borderColor:SW_COLORS[i],backgroundColor:SW_COLORS[i]+'22',
-      fill:true,tension:.3,pointRadius:2,borderWidth:1.5
-    }));
+    datasets=boards.map(mkDataset);
   }else{
     const i=parseInt(histMode);const b=boards[i]||{};
-    datasets=[{label:boardName(i),data:rows.map(r=>r.mac_write===b.mac_write?1:0),
-      borderColor:SW_COLORS[i],backgroundColor:SW_COLORS[i]+'33',
-      fill:true,tension:.3,pointRadius:2,borderWidth:2}];
+    datasets=[mkDataset(b,i)];
   }
-  const cfg={type:'line',data:{labels,datasets},options:{responsive:true,animation:false,
+
+  const cfg={type:'scatter',data:{datasets},options:{responsive:true,animation:false,
     scales:{
-      x:{ticks:{color:c.text,font:{family:'IBM Plex Mono',size:10},autoSkip:false},
-        afterBuildTicks:axis=>{ axis.ticks=dayBoundaryIdx.map(i=>({value:i})); },
+      x:{type:'linear',min:minT-pad,max:maxT+pad,
+        ticks:{color:c.text,font:{family:'IBM Plex Mono',size:10},maxTicksLimit:8,callback:fmtTick},
         grid:{color:c.grid}},
-      y:{min:-.1,max:1.1,ticks:{color:c.text,callback:v=>v===1?'⚡':v===0?'—':'',font:{family:'IBM Plex Mono',size:10}},grid:{color:c.grid}}
+      y:{min:-.6,max:boards.length-.4,
+        ticks:{color:c.text,font:{family:'IBM Plex Mono',size:11},stepSize:1,
+          callback:v=>{ const i=Math.round(v); return (i>=0&&i<boards.length&&Number.isInteger(v))?boardName(i):''; }},
+        grid:{color:c.grid}}
     },
     plugins:{legend:{labels:{color:c.text,font:{family:'IBM Plex Mono',size:11},boxWidth:12}},
       tooltip:{backgroundColor:c.tbg,borderColor:c.tborder,borderWidth:1,titleColor:c.ttitle,bodyColor:c.tbody,
         callbacks:{
-          title:ctx=>{
-            const idx=ctx[0].dataIndex;
-            return new Date(rows[idx].t).toLocaleString('th-TH');
-          },
-          label:ctx=>` ${ctx.dataset.label}: ${ctx.raw===1?'detect':''}`}}}}};
+          title:ctx=>fmtTick(ctx[0].parsed.x),
+          label:ctx=>` ${ctx.dataset.label}: detect`
+        }}}}};
+
   if(histChartObj){
-    histChartObj.data.labels=cfg.data.labels;
     histChartObj.data.datasets=cfg.data.datasets;
-    // rows/dayBoundaryIdx เปลี่ยนทุกครั้งที่มีข้อมูลใหม่ ต้องอัป callback ที่ผูกกับตัวแปรนี้ด้วย ไม่งั้น tooltip/ticks จะอ้างข้อมูลเก่าค้าง
-    histChartObj.options.scales.x.afterBuildTicks=cfg.options.scales.x.afterBuildTicks;
-    histChartObj.options.plugins.tooltip.callbacks.title=cfg.options.plugins.tooltip.callbacks.title;
+    histChartObj.options.scales.x.min=cfg.options.scales.x.min;
+    histChartObj.options.scales.x.max=cfg.options.scales.x.max;
     histChartObj.update();
     return;
   }
