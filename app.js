@@ -527,9 +527,27 @@ function renderHistChart(){
     },
     plugins:{legend:{labels:{color:c.text,font:{family:'IBM Plex Mono',size:11},boxWidth:12}},
       tooltip:{backgroundColor:c.tbg,borderColor:c.tborder,borderWidth:1,titleColor:c.ttitle,bodyColor:c.tbody,
+        filter:(item,idx,arr)=>{
+          // รวมจุดที่ทับกัน (ชนวินาที/พิกเซลเดียวกัน) ของบอร์ดเดียวกันไว้ในกลุ่มเดียว
+          // เก็บ reference กลุ่มไว้ที่ item เพื่อให้ label() เอาไปสร้างลิสต์เวลาได้
+          item.__group=arr.filter(a=>a.datasetIndex===item.datasetIndex);
+          return arr.findIndex(a=>a.datasetIndex===item.datasetIndex)===idx;
+        },
         callbacks:{
-          title:ctx=>fmtTick(ctx[0].parsed.x),
-          label:ctx=>` ${ctx.dataset.label}: detect`
+          title:()=>'',
+          label:ctx=>{
+            const MAX_LINES=20;
+            const group=ctx.__group||[ctx];
+            const times=group.map(g=>new Date(g.raw.x)).sort((a,b)=>a-b);
+            const letter=String.fromCharCode(65+ctx.datasetIndex);
+            const dateStr=times[0].toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'2-digit'});
+            const lines=[`${letter} : detect ${group.length} ครั้ง`,dateStr];
+            times.slice(0,MAX_LINES).forEach((t,i)=>{
+              lines.push(`${i+1}. ${t.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}`);
+            });
+            if(times.length>MAX_LINES) lines.push(`...และอีก ${times.length-MAX_LINES} ครั้ง`);
+            return lines;
+          }
         }}}}};
 
   if(histChartObj){
