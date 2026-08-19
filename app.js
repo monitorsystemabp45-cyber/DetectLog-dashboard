@@ -536,16 +536,19 @@ function renderHistChart(){
         callbacks:{
           title:()=>'',
           label:ctx=>{
-            const MAX_LINES=20;
+            const MAX_LINES=8;
             const group=ctx.__group||[ctx];
             const times=group.map(g=>new Date(g.raw.x)).sort((a,b)=>a-b);
             const letter=String.fromCharCode(65+ctx.datasetIndex);
             const dateStr=times[0].toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'2-digit'});
+            const fmtT=t=>t.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
             const lines=[`${letter} : detect ${group.length} ครั้ง`,dateStr];
-            times.slice(0,MAX_LINES).forEach((t,i)=>{
-              lines.push(`${i+1}. ${t.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}`);
-            });
-            if(times.length>MAX_LINES) lines.push(`...และอีก ${times.length-MAX_LINES} ครั้ง`);
+            if(times.length>MAX_LINES){
+              // เยอะเกินจะแสดงทีละรายการไม่ไหว (tooltip จะล้นกรอบ canvas) เลยสรุปเป็นช่วงเวลาแทน
+              lines.push(`ช่วงเวลา ${fmtT(times[0])} – ${fmtT(times[times.length-1])}`);
+            }else{
+              times.forEach((t,i)=>{ lines.push(`${i+1}. ${fmtT(t)}`); });
+            }
             return lines;
           }
         }}}}};
