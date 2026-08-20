@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DetectLog</title>
+<!-- โหลดไลบรารีที่ใช้วาดกราฟ (Chart.js) และไอคอน (lucide) จากอินเทอร์เน็ต -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23F47B20'/%3E%3Cpath d='M50 15 L78 28 L78 52 C78 67 65 78 50 85 C35 78 22 67 22 52 L22 28 Z' fill='white'/%3E%3Cpath d='M42 52 L47 57 L60 44' stroke='%23F47B20' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+<!-- โหลดไฟล์ตกแต่งหน้าตา (style.css) กับไฟล์การทำงาน (app.js อยู่ล่างสุดของไฟล์) -->
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,6 +18,7 @@
 <!-- ═══════════════════════════════
      LOGIN OVERLAY
 ═══════════════════════════════ -->
+<!-- หน้าจอ Login: ผู้ใช้ต้องกรอก username/password ก่อนถึงจะเข้าใช้งานเว็บได้ -->
 <div id="loginOverlay">
   <div class="login-card">
     <div class="login-brand">
@@ -48,6 +51,7 @@
 <!-- ═══════════════════════════════
      MOBILE HEADER
 ═══════════════════════════════ -->
+<!-- แถบด้านบนของจอมือถือ: โชว์ชื่อระบบ, สถานะ, และปุ่มเปิดเมนู -->
 <header class="mobile-header">
   <div class="mobile-brand">
     <div class="mobile-brand-icon"><i data-lucide="shield-check"></i></div>
@@ -62,6 +66,7 @@
   </div>
 </header>
 
+<!-- เมนูแบบเลื่อนออกมาจากด้านข้าง ใช้เฉพาะตอนดูบนจอมือถือ (เนื้อหาเหมือน sidebar ฝั่งซ้ายของจอคอม) -->
 <!-- Mobile drawer -->
 <div class="mobile-drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 <div class="mobile-drawer" id="mobileDrawer">
@@ -92,9 +97,11 @@
 <!-- ═══════════════════════════════
      APP SHELL
 ═══════════════════════════════ -->
+<!-- โครงหลักของเว็บทั้งหมด: sidebar ซ้ายมือ + เนื้อหาหลักฝั่งขวา -->
 <div class="app">
 
   <!-- SIDEBAR -->
+<!-- เมนูฝั่งซ้าย (จอคอม): มีปุ่มสลับไปหน้าต่างๆ แบ่งเป็นกลุ่ม Monitor / Analytics / System -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo">
@@ -104,6 +111,7 @@
       <div class="brand-sub">Security Ops</div>
     </div>
 
+      <!-- กลุ่มเมนู Monitor: ดูภาพรวม, แผนผังโซน, และ live events -->
     <div class="nav-section">
       <div class="nav-section-label">Monitor</div>
       <button class="nav-item active" data-tip="ภาพรวมระบบ" onclick="navTo('top',this)"><i data-lucide="layout-dashboard"></i><span class="nav-item-text">ภาพรวมระบบ</span></button>
@@ -111,6 +119,7 @@
       <button class="nav-item" data-tip="Live Events" onclick="navTo('sec-stats',this)"><i data-lucide="activity"></i><span class="nav-item-text">Live Events</span></button>
     </div>
 
+      <!-- กลุ่มเมนู Analytics: กราฟสถิติต่างๆ และตาราง log ย้อนหลัง -->
     <div class="nav-section">
       <div class="nav-section-label">Analytics</div>
       <button class="nav-item" data-tip="สถิติ Detect" onclick="navTo('sec-stats',this)"><i data-lucide="bar-chart-2"></i><span class="nav-item-text">สถิติ Detect</span></button>
@@ -118,6 +127,7 @@
       <button class="nav-item" data-tip="Log ย้อนหลัง" onclick="navTo('sec-log',this)"><i data-lucide="scroll-text"></i><span class="nav-item-text">Log ย้อนหลัง</span></button>
     </div>
 
+    <!-- กลุ่มเมนู System: ตั้งค่าการทำงานของอุปกรณ์ (โหมด, WiFi สำรอง, ตั้งค่าขั้นสูง) -->
     <div class="nav-section system-nav-section">
       <div class="nav-section-label">System</div>
       <button class="nav-item" data-tip="โหมดการทำงาน" onclick="goPage('mode',this)"><i data-lucide="zap"></i><span class="nav-item-text">โหมดการทำงาน</span></button>
@@ -125,6 +135,7 @@
       <button class="nav-item" data-tip="ตั้งค่าขั้นสูง" onclick="goPage('settings',this)"><i data-lucide="settings-2"></i><span class="nav-item-text">ตั้งค่าขั้นสูง</span></button>
     </div>
 
+    <!-- ส่วนท้ายของเมนู: จุดสถานะ (ทำงานอยู่ไหม), เวลาที่รีเฟรชล่าสุด, ปุ่มสลับธีม/รีเฟรช/ออกจากระบบ -->
     <div class="sidebar-footer">
       <div class="status-indicator">
         <div class="status-dot" id="statusDot"></div>
@@ -145,14 +156,17 @@
     </div>
   </aside>
   <!-- Sidebar toggle tab - outside sidebar so overflow doesn't clip it -->
+  <!-- ปุ่มย่อ/ขยายเมนูฝั่งซ้าย ให้เหลือแค่ไอคอน ประหยัดพื้นที่จอ -->
   <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="ย่อ/ขยาย sidebar">
     <i data-lucide="chevron-left"></i>
   </button>
 
   <!-- MAIN -->
+  <!-- เนื้อหาหลักฝั่งขวา: แถบหัวข้อด้านบน + เนื้อหาของแต่ละหน้า -->
   <div class="main">
 
     <!-- TOPBAR -->
+    <!-- แถบหัวข้อด้านบน: โชว์ชื่อหน้าปัจจุบัน กับปุ่มรีเฟรชข้อมูล -->
     <div class="topbar">
       <div class="topbar-left">
         <span class="page-title" id="topbarTitle">ภาพรวมระบบ</span>
@@ -167,13 +181,16 @@
     </div>
 
     <!-- CONTENT -->
+    <!-- ตรงนี้คือที่เก็บ "หน้า" ทั้งหมดของเว็บ (dashboard, mode, wifi, settings) เว็บนี้สลับหน้าด้วยการซ่อน/โชว์ ไม่ได้โหลดหน้าใหม่จริงๆ -->
     <div class="content">
 
       <div class="err-bar" id="errMsg"></div>
 
+      <!-- ═══ หน้าแรก: ภาพรวมระบบ (การ์ดบอร์ด, แผนผัง, กราฟ, log) ═══ -->
       <!-- ═══ PAGE: DASHBOARD ═══ -->
       <div id="page-dashboard" class="page-view active">
 
+      <!-- ช่องตั้งค่าลิงก์เซิร์ฟเวอร์ กับความถี่รีเฟรชอัตโนมัติ -->
       <!-- Config -->
       <div class="config-row">
         <span class="config-label">Web App URL</span>
@@ -186,6 +203,7 @@
         <button class="btn-primary" onclick="saveConfig()"><i data-lucide="save"></i>บันทึก</button>
       </div>
 
+      <!-- แผนผังโซน: โชว์รูปพื้นที่จริง พร้อมจุดไฟที่จะติดสว่างเมื่อโซนนั้นเพิ่งตรวจจับได้ -->
       <!-- FLOORPLAN -->
       <div id="sec-floorplan">
         <div class="section-hdr">
@@ -237,6 +255,7 @@
         </div>
       </div>
 
+      <!-- การ์ดสรุปของแต่ละบอร์ด (คลิกที่การ์ดเพื่อแก้ไขข้อมูล MAC/ชื่อบอร์ดได้) -->
       <!-- DEVICE CARDS -->
       <div id="sec-devices">
         <div class="section-hdr">
@@ -246,12 +265,14 @@
         <div class="cards-grid" id="swGrid"><div class="loading-text">กำลังโหลด...</div></div>
       </div>
 
+      <!-- แถบสรุปตัวเลขแบบย่อของแต่ละบอร์ด -->
       <!-- SUMMARY -->
       <div>
         <div class="section-hdr"><div class="section-label">สถิติสรุป แยก Write Board</div></div>
         <div class="summary-strip" id="sumGrid"><div class="loading-text">กำลังโหลด...</div></div>
       </div>
 
+      <!-- กราฟแท่งแนวนอน: เทียบยอด detect รวมของแต่ละบอร์ด -->
       <!-- CHART: Uptime -->
       <div class="panel" id="sec-stats">
         <div class="panel-head">
@@ -265,6 +286,7 @@
         <canvas id="uptimeChart" style="max-height:180px;"></canvas>
       </div>
 
+      <!-- กราฟจุด: ประวัติการ detect เรียงตามเวลาจริง แยกแถวตามบอร์ด -->
       <!-- CHART: History -->
       <div class="panel" id="sec-hist">
         <div class="panel-head">
@@ -286,6 +308,7 @@
         <canvas id="histChart"></canvas>
       </div>
 
+      <!-- กราฟแท่ง: ยอด detect แยกเป็นรายวัน ของแต่ละบอร์ด -->
       <!-- CHART: Daily -->
       <div class="panel">
         <div class="panel-head">
@@ -301,6 +324,7 @@
         <canvas id="dailyChart"></canvas>
       </div>
 
+      <!-- ตาราง log ย้อนหลัง: รายการ detect/heartbeat ทั้งหมด เรียงจากล่าสุด -->
       <!-- LOG TABLE -->
       <div class="panel" id="sec-log">
         <div class="panel-head">
@@ -315,6 +339,7 @@
 
       </div><!-- /page-dashboard -->
 
+      <!-- ═══ หน้า: เลือกโหมดการทำงานของ Relay (24 ชม. / ตามตาราง / กลางคืนอย่างเดียว / ปิด) ═══ -->
       <!-- ═══ PAGE: MODE ═══ -->
       <div id="page-mode" class="page-view">
         <div id="sec-mode">
@@ -349,6 +374,7 @@
         </div>
       </div><!-- /page-mode -->
 
+      <!-- ═══ หน้า: ตั้งค่า WiFi สำรองของแต่ละบอร์ด ═══ -->
       <!-- ═══ PAGE: WIFI ═══ -->
       <div id="page-wifi" class="page-view">
         <div id="sec-backupwifi">
@@ -368,6 +394,7 @@
         </div>
       </div><!-- /page-wifi -->
 
+      <!-- ═══ หน้า: ตั้งค่าขั้นสูง (relay timeout, poll interval, ตารางเวลารายวัน, ประวัติการเปลี่ยนค่า) ═══ -->
       <!-- ═══ PAGE: SETTINGS ═══ -->
       <div id="page-settings" class="page-view">
         <div id="sec-settings">
@@ -375,6 +402,7 @@
             <div class="section-label">ตั้งค่าขั้นสูง</div>
           </div>
 
+          <!-- ค่าเริ่มต้นที่ใช้เวลาโหมดเป็น 24H หรือปิดทั้งหมด (โหมด 2-3 จะไปใช้ค่าจากตารางเวลาด้านล่างแทน) -->
           <!-- General Settings -->
           <div class="panel" style="margin-bottom:12px">
             <div class="panel-hdr">
@@ -406,6 +434,7 @@
             </div>
           </div>
 
+          <!-- ตารางให้ตั้งเวลาเปิด-ปิดแยกแต่ละวันในสัปดาห์ ใช้ตอนเลือกโหมด 2 หรือ 3 -->
           <!-- Schedule Table -->
           <div class="panel" style="margin-bottom:12px">
             <div class="panel-hdr">
@@ -442,6 +471,7 @@
             </div>
           </div>
 
+          <!-- ประวัติว่าเคยเปลี่ยนค่าตั้งค่าอะไรไปบ้าง เมื่อไหร่ -->
           <!-- Settings Log -->
           <div class="panel">
             <div class="panel-hdr" style="margin-bottom:.875rem">
@@ -461,6 +491,7 @@
   </div><!-- /main -->
 </div><!-- /app -->
 
+<!-- หน้าต่างป๊อปอัปแก้ไขข้อมูลบอร์ด (เปิดจากการคลิกที่การ์ดบอร์ด) -->
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOv" onclick="closeModalBg(event)">
   <div class="modal">
@@ -500,5 +531,6 @@
   </div>
 </div>
 
+<!-- โหลดไฟล์ที่มีโค้ดการทำงานทั้งหมดของเว็บ (ดึงข้อมูล, วาดกราฟ, บันทึกค่าต่างๆ) -->
 <script src="app.js"></script>
 </html>
