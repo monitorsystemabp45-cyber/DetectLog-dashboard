@@ -3,6 +3,8 @@
 /* ═══════════════════════════════
    TOKENS
 ═══════════════════════════════ */
+/* สีและค่าต่างๆ ที่ใช้ซ้ำทั้งเว็บ เก็บไว้เป็นตัวแปรกลาง (เปลี่ยนที่นี่ที่เดียว มีผลทั้งเว็บ)
+   ด้านล่างมี [data-theme="dark"] คือชุดสีสำหรับโหมดมืด ที่จะสลับมาใช้แทนตอนกดปุ่มเปลี่ยนธีม */
 :root{
   --bg:#F5F5F5;
   --surface:#FFFFFF;
@@ -63,9 +65,10 @@ body{
 /* ═══════════════════════════════
    APP SHELL
 ═══════════════════════════════ */
+/* โครงหลักของหน้าเว็บ: แบ่งจอเป็นเมนูฝั่งซ้าย (sidebar) กับเนื้อหาฝั่งขวา */
 .app{display:flex;flex:1;height:100vh;overflow:hidden;}
 
-/* ── Sidebar ── */
+/* ── Sidebar ── *//* หน้าตาของเมนูฝั่งซ้าย รวมถึงตอนย่อ (.collapsed) ให้เหลือแค่ไอคอน */
 .sidebar{
   width:var(--sidebar-w);
   background:var(--surface);
@@ -228,7 +231,7 @@ body.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg);}
 .status-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
 .status-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-left:auto;}
 
-/* ── Main content ── */
+/* ── Main content ── *//* พื้นที่เนื้อหาหลักฝั่งขวาของเมนู */
 .main{
   flex:1;
   overflow-y:auto;
@@ -236,7 +239,7 @@ body.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg);}
   flex-direction:column;
 }
 
-/* ── Topbar ── */
+/* ── Topbar ── *//* แถบหัวข้อด้านบนสุดของเนื้อหาหลัก (โชว์ชื่อหน้า + ปุ่มรีเฟรช) */
 .topbar{
   background:var(--surface);
   border-bottom:1px solid var(--border);
@@ -283,10 +286,10 @@ body.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg);}
 .btn-ghost svg{width:13px;height:13px;stroke-width:2;}
 .btn-ghost:hover{color:var(--text);border-color:var(--border2);}
 
-/* ── Content area ── */
+/* ── Content area ── *//* พื้นที่ที่ใส่เนื้อหาของแต่ละหน้า (การ์ด, กราฟ, ตาราง ฯลฯ) */
 .content{padding:24px;display:flex;flex-direction:column;gap:24px;}
 
-/* ── Section header ── */
+/* ── Section header ── *//* หัวข้อของแต่ละบล็อกเนื้อหา (เช่น "Floorplan Monitor", "Log ย้อนหลัง") */
 .section-hdr{
   display:flex;align-items:center;justify-content:space-between;
   margin-bottom:14px;
@@ -299,7 +302,7 @@ body.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg);}
   color:var(--muted);
 }
 
-/* ── Error bar ── */
+/* ── Error bar ── *//* แถบข้อความแจ้งเตือนสีแดง ตอนเชื่อมต่อเซิร์ฟเวอร์ไม่ได้ */
 .err-bar{
   background:#FEF1EF;border:1px solid #F5B8B2;
   border-radius:var(--radius);padding:10px 14px;
@@ -307,7 +310,7 @@ body.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg);}
 }
 [data-theme="dark"] .err-bar{background:#2A1410;border-color:#5A2020;color:#E88070;}
 
-/* ── Config bar ── */
+/* ── Config bar ── *//* แถบตั้งค่าลิงก์เซิร์ฟเวอร์กับความถี่รีเฟรช ที่อยู่บนสุดของหน้า dashboard */
 .config-row{
   background:var(--surface);
   border:1px solid var(--border);
@@ -342,6 +345,7 @@ body.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg);}
 /* ═══════════════════════════════
    DEVICE CARDS
 ═══════════════════════════════ */
+/* หน้าตาการ์ดสรุปของแต่ละบอร์ด (WRITE A/B/C/D) ที่โชว์บนหน้า dashboard */
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
 
 .device-card{
@@ -435,6 +439,7 @@ body.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg);}
 /* ═══════════════════════════════
    SUMMARY STRIP
 ═══════════════════════════════ */
+/* กล่องสรุปตัวเลขแบบย่อ เรียงเป็นแถบยาว อยู่ใต้การ์ดบอร์ด */
 .summary-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
 .sum-tile{
   background:var(--surface);border:1px solid var(--border);
@@ -461,6 +466,7 @@ body.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg);}
 /* ═══════════════════════════════
    PANELS (chart, floorplan, etc.)
 ═══════════════════════════════ */
+/* กล่อง (panel) ที่ใช้ห่อกราฟ/แผนผัง/ตารางต่างๆ ให้หน้าตาเป็นชุดเดียวกัน */
 .panel{
   background:var(--surface);
   border:1px solid var(--border);
@@ -497,7 +503,7 @@ canvas{max-height:240px;}
 }
 .date-inp:focus{outline:none;border-color:var(--accent);}
 
-/* ── Log table ── */
+/* ── Log table ── *//* หน้าตาตาราง log ย้อนหลัง */
 .log-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:6px;}
 .log-scroll::-webkit-scrollbar{height:3px;}
 .log-scroll::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px;}
@@ -519,7 +525,7 @@ canvas{max-height:240px;}
 .badge-detect{background:var(--accent-dim);color:var(--accent);}
 .badge-hb{background:var(--surface2);color:var(--muted);}
 
-/* ── Floorplan ── */
+/* ── Floorplan ── *//* หน้าตาแผนผังโซน รวมจุดไฟที่จะติดสว่างตอนมีการ detect */
 .fp-map{position:relative;width:100%;overflow:hidden;border-radius:6px;border:1px solid var(--border);}
 .fp-map img{width:100%;height:auto;display:block;}
 [data-theme="dark"] .fp-map img{filter:invert(1) hue-rotate(180deg);opacity:.75;}
@@ -552,7 +558,7 @@ canvas{max-height:240px;}
 .fp-chip-zone{font-weight:500;}
 .fp-chip-state{color:var(--muted);}
 
-/* ── Legend pills ── */
+/* ── Legend pills ── *//* ป้ายเล็กๆ บอกสีของแต่ละโซน (Zone 1/2/3) เหนือแผนผัง */
 .legend-row{display:flex;gap:8px;flex-wrap:wrap;}
 .legend-pill{
   display:flex;align-items:center;gap:5px;
@@ -564,6 +570,7 @@ canvas{max-height:240px;}
 /* ═══════════════════════════════
    MODE PANEL
 ═══════════════════════════════ */
+/* หน้าตาของหน้า "โหมดการทำงาน" (ปุ่มเลือกโหมด 24H / ตามตาราง / กลางคืน / ปิด) */
 .mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;}
 .mode-opt{
   display:flex;align-items:center;gap:10px;
@@ -596,6 +603,7 @@ canvas{max-height:240px;}
 /* ═══════════════════════════════
    SETTINGS
 ═══════════════════════════════ */
+/* หน้าตาของหน้า "ตั้งค่าขั้นสูง" (ฟอร์มกรอกค่าต่างๆ, ตารางเวลา) */
 .settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:14px;}
 .field-wrap label{
   display:block;
@@ -644,6 +652,7 @@ canvas{max-height:240px;}
 /* ═══════════════════════════════
    MODAL
 ═══════════════════════════════ */
+/* หน้าตาของหน้าต่างป๊อปอัปแก้ไขข้อมูลบอร์ด (เปิดตอนคลิกที่การ์ด) */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.45);
   z-index:200;display:flex;align-items:center;justify-content:center;
@@ -715,6 +724,7 @@ canvas{max-height:240px;}
 /* ═══════════════════════════════
    LOGIN
 ═══════════════════════════════ */
+/* หน้าตาของหน้าจอ Login ก่อนเข้าใช้งานเว็บ */
 #loginOverlay{
   position:fixed;inset:0;background:var(--bg);
   z-index:999;display:flex;align-items:center;justify-content:center;
@@ -766,6 +776,7 @@ canvas{max-height:240px;}
 /* ═══════════════════════════════
    MOBILE HEADER (hidden on desktop)
 ═══════════════════════════════ */
+/* แถบหัวข้อบนสุด เฉพาะตอนเปิดผ่านจอมือถือ (จอคอมจะไม่โชว์ส่วนนี้) */
 .mobile-header{
   display:none;
   background:var(--surface);border-bottom:1px solid var(--border);
@@ -798,11 +809,13 @@ canvas{max-height:240px;}
 /* ═══════════════════════════════
    LOADING STATE
 ═══════════════════════════════ */
+/* ข้อความ "กำลังโหลด..." ที่โชว์ระหว่างรอข้อมูลจากเซิร์ฟเวอร์ */
 .loading-text{text-align:center;padding:32px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;}
 
 /* ═══════════════════════════════
    MOBILE DRAWER
 ═══════════════════════════════ */
+/* เมนูแบบเลื่อนออกมาจากด้านข้าง เฉพาะตอนเปิดผ่านจอมือถือ */
 .mobile-drawer-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
   z-index:80;
@@ -820,6 +833,7 @@ canvas{max-height:240px;}
 /* ═══════════════════════════════
    RESPONSIVE
 ═══════════════════════════════ */
+/* ปรับหน้าตาให้เข้ากับขนาดจอที่เล็กลง (จอแท็บเล็ต/มือถือ) */
 @media(max-width:768px){
   .sidebar{display:none;}
   .sidebar-toggle{display:none;}
@@ -838,7 +852,7 @@ canvas{max-height:240px;}
   .mode-grid{grid-template-columns:1fr 1fr;}
 }
 
-/* ── Page Views (SPA) ── */
+/* ── Page Views (SPA) ── *//* ควบคุมการซ่อน/โชว์แต่ละ "หน้า" (dashboard, mode, wifi, settings) ตอนสลับเมนู */
 .page-view{
   display:none;
 }
@@ -864,7 +878,7 @@ canvas{max-height:240px;}
 .sched-summary{font-size:11px;color:var(--muted);margin-top:.625rem;padding:8px 12px;background:var(--bg);border-radius:6px;line-height:1.7;font-family:'IBM Plex Mono',monospace;}
 .sched-summary b{color:var(--text);font-weight:600;}
 
-/* ── Settings Log ── */
+/* ── Settings Log ── *//* หน้าตาตารางประวัติการเปลี่ยนค่าตั้งค่า */
 .log-tbl{width:100%;border-collapse:collapse;font-size:11px;}
 .log-tbl th{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-align:left;padding:5px 10px;border-bottom:1px solid var(--border);text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
 .log-tbl td{padding:6px 10px;border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;color:var(--text2);}
@@ -878,7 +892,7 @@ canvas{max-height:240px;}
 .panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;flex-wrap:wrap;gap:.5rem;}
 .panel-title{font-size:12px;font-weight:600;color:var(--text);}
 
-/* ── Backup WiFi Panel ── */
+/* ── Backup WiFi Panel ── *//* หน้าตาฟอร์มตั้งค่า WiFi สำรองของแต่ละบอร์ด */
 .wifi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius,10px);padding:1rem 1.125rem;margin-bottom:10px;}
 .wifi-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem;}
 .wifi-board-id{font-size:13px;font-weight:700;}
@@ -892,7 +906,7 @@ canvas{max-height:240px;}
 .wifi-current-row{display:flex;align-items:center;gap:6px;margin-bottom:.625rem;font-size:11px;color:var(--muted);}
 .wifi-current-val{font-family:'IBM Plex Mono',monospace;color:var(--text2);font-weight:600;}
 
-/* ── Viewer role — ซ่อน System section ── */
+/* ── Viewer role — ซ่อน System section ── *//* ถ้า login แบบ Viewer (ดูอย่างเดียว) จะซ่อนเมนู System ไม่ให้เข้าไปแก้ค่าได้ */
 body.role-viewer .system-nav-section { display: none !important; }
 body.role-viewer .edit-action { display: none !important; }
 body.role-viewer #sec-mode,
